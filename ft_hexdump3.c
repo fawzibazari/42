@@ -108,35 +108,27 @@ char	*ascii_to_hex(unsigned char nbr)
 	return (hex_offset);
 }
 
-void    write_hex(unsigned char *str, int rd, int **line, int j)
+void    write_hex(unsigned char *str, int rd, int **line)
 {
-/*	
-	char	*hex_str;
-
-	write(1, " ", 1);
-	hex_str = ascii_to_hex(str);
-	write(1, hex_str, 2);
-*/
 
         int     i;
+	int	j;
 	char	*hex_str;
-	if (j != 0)
-		return;
 
         i = 0;
+	j = **line;
         while (i < rd)
         {
 		write(1, " ", 1);
 		hex_str = ascii_to_hex(str[i]);
 		write(1, hex_str, 2);
-		if (**line % 16 == 7)
+		if (j % 16 == 7)
 		{
-			printf("line: %d\n", **line);
+			write(1, " ", 1);
 		}
-		//	write(1, "M", 1);
+		j++;
 		i++;
         }
-	write(1, " ", 1);
 	free(hex_str);
 }
 
@@ -151,39 +143,30 @@ void	read_file(char *filename, int *line)
         fd = open(filename, O_RDONLY);
         while (rd)
         {
-                rd = read(fd, &buffer, 16);
+                rd = read(fd, &buffer, (16 - (*line % 16)));
                 if (rd == 0 || rd == -1)
                         break ;
-
+		if (*line % 16 == 0)
+			offset_in_hex(*line);
 		j = 0;
+		write_hex(buffer, rd, &line);
+		*line += rd;
+		
+		write(1, "|", 1);
 		while (j < rd)
 		{
-
-			
-			if (*line % 16 == 0)
-			{
-				//Hexa counter
-				offset_in_hex(*line);
-
-				//Hexa representation
-			}
-			write_hex(buffer, rd, &line, j);
-			//if (*line % 16 == 7)
-			//	write(1, " ", 1);
-			
 			// ASCII
 			if (buffer[j] >= 32 && buffer[j] <= 126)
 				write(1, &buffer[j], 1);
                 	else
-                	{
 				write(1, ".", 1);
-			}
-			
 			j++;
-			*line = *line + 1;
-			if (*line % 16 == 0)
-				write(1, "|\n", 2);
 		}
+		
+		if (*line % 16 == 0)
+			write(1, "|\n", 2);
+
+	//	break ;
         }
         close(fd);
 }
