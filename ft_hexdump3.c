@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_hexdump3.c                                      :+:      :+:    :+:   */
+/*   ft_hexdump.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: fbazari <fbazari@learner.42.tech>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -44,7 +44,7 @@ void     reverse(char *converted)
         }
 }
 
-char	*offset_in_hex(int nbr)
+void	offset_in_hex(int nbr)
 {
 	int		i;
 	char	*hex_offset;
@@ -54,7 +54,7 @@ char	*offset_in_hex(int nbr)
 	hex_base = "0123456789abcdef";
 	hex_offset = malloc(sizeof(char) * 8);
         if (hex_offset == NULL)
-                return (NULL);
+		return;
 
 	while(i <= 7)
 	{
@@ -76,8 +76,68 @@ char	*offset_in_hex(int nbr)
 		write(1, &hex_offset[i], 1);
 		i++;
 	}
+	free(hex_offset);
 	write(1, "  ", 2);
+}
+
+char	*ascii_to_hex(unsigned char nbr)
+{
+        int             i;
+        char    *hex_offset;
+        char    *hex_base;
+	int	nbr_count;
+
+        i = 0;
+	nbr_count = 0;
+        hex_base = "0123456789abcdef";
+        hex_offset = malloc(sizeof(char) * 3);
+        if (hex_offset == NULL)
+                return (NULL);
+
+        while(nbr > 0)
+        {
+		nbr_count++;
+                hex_offset[i] = hex_base[nbr % 16];
+                nbr /= 16;
+                i++;
+        }
+	if (nbr_count == 1)
+		hex_offset[i++] = '0';
+        reverse(hex_offset);
+        hex_offset[i] = '\0';
 	return (hex_offset);
+}
+
+void    write_hex(unsigned char *str, int rd, int **line, int j)
+{
+/*	
+	char	*hex_str;
+
+	write(1, " ", 1);
+	hex_str = ascii_to_hex(str);
+	write(1, hex_str, 2);
+*/
+
+        int     i;
+	char	*hex_str;
+	if (j != 0)
+		return;
+
+        i = 0;
+        while (i < rd)
+        {
+		write(1, " ", 1);
+		hex_str = ascii_to_hex(str[i]);
+		write(1, hex_str, 2);
+		if (**line % 16 == 7)
+		{
+			printf("line: %d\n", **line);
+		}
+		//	write(1, "M", 1);
+		i++;
+        }
+	write(1, " ", 1);
+	free(hex_str);
 }
 
 void	read_file(char *filename, int *line)
@@ -85,7 +145,7 @@ void	read_file(char *filename, int *line)
 	int		j;
         int             rd;
         int             fd;
-        char    buffer[16];
+	unsigned char    buffer[16];
 
         rd = 1;
         fd = open(filename, O_RDONLY);
@@ -98,26 +158,31 @@ void	read_file(char *filename, int *line)
 		j = 0;
 		while (j < rd)
 		{
-			//Hexa counter
-			
-			//Hexa representation
 
-			// ASCII
+			
 			if (*line % 16 == 0)
 			{
+				//Hexa counter
 				offset_in_hex(*line);
-				write(1, "|", 1);
+
+				//Hexa representation
 			}
+			write_hex(buffer, rd, &line, j);
+			//if (*line % 16 == 7)
+			//	write(1, " ", 1);
+			
+			// ASCII
 			if (buffer[j] >= 32 && buffer[j] <= 126)
 				write(1, &buffer[j], 1);
                 	else
                 	{
 				write(1, ".", 1);
 			}
+			
 			j++;
 			*line = *line + 1;
 			if (*line % 16 == 0)
-                        	write(1, "|\n", 2);
+				write(1, "|\n", 2);
 		}
         }
         close(fd);
@@ -133,12 +198,10 @@ int     main(int argc, char **argv)
         {
                 while (argv[i])
                 {
-			//printf("%s\n", offset_in_hex(line));
 			read_file(argv[i], &line);
-			//printf("line :%d\n", line);
-		i++;
+			i++;
 		}
-		write(1, "\n", 1);
+		write(1, "|\n", 2);
 		offset_in_hex(line);
 	}
 	return(0);
