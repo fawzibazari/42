@@ -132,40 +132,59 @@ void    write_hex(unsigned char *str, int rd, int **line)
 	free(hex_str);
 }
 
-void	read_file(char *filename, int *line)
+void	read_file(char *filename, int *line, unsigned char *buffer)
 {
 	int		j;
-        int             rd;
+	int             rd;
         int             fd;
-	unsigned char    buffer[16];
 
         rd = 1;
         fd = open(filename, O_RDONLY);
         while (rd)
-        {
-                rd = read(fd, &buffer, (16 - (*line % 16)));
-                if (rd == 0 || rd == -1)
+	{
+		
+                rd = read(fd, buffer, (16 - (*line % 16)));
+		if (rd == 0 || rd == -1)
                         break ;
+		/*
 		if (*line % 16 == 0)
 			offset_in_hex(*line);
+		
 		j = 0;
 		write_hex(buffer, rd, &line);
 		*line += rd;
-		
-		write(1, "|", 1);
-		while (j < rd)
+		*/
+		/*
+		if (rd < 16 && file_number +1 != argc)
 		{
-			// ASCII
-			if (buffer[j] >= 32 && buffer[j] <= 126)
-				write(1, &buffer[j], 1);
-                	else
-				write(1, ".", 1);
-			j++;
+			previous = malloc(sizeof(unsigned char) * rd);
+			if (previous == NULL)
+				return;
+			while (j < rd)
+			{
+				previous[j] = buffer[j];
+				j++;
+			}
 		}
-		
-		if (*line % 16 == 0)
-			write(1, "|\n", 2);
+		*/
+		printf("%s\n", buffer);
 
+		/*
+		if (*line % 16 == 0){
+			write(1, "|", 1);
+			while (buffer[j])
+			{
+				// ASCII
+				if (buffer[j] >= 32 && buffer[j] <= 126)
+					write(1, &buffer[j], 1);
+                		else
+					write(1, ".", 1);
+				j++;
+			}
+		}
+		*/
+		//if (*line % 16 == 0)
+		//	write(1, "|\n", 2);
 	//	break ;
         }
         close(fd);
@@ -175,13 +194,15 @@ int     main(int argc, char **argv)
 {
         int     i;
 	int	line;
-        i = 2;
+	unsigned char   buffer[16];
+
+	i = 2;
 	line = 0;
         if (argc >= 3 && argv[1][0] == '-' && argv[1][1] == 'C')
         {
                 while (argv[i])
                 {
-			read_file(argv[i], &line);
+			read_file(argv[i], &line, buffer);
 			i++;
 		}
 		write(1, "|\n", 2);
