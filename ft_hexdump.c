@@ -128,8 +128,8 @@ void    write_hex(unsigned char *str, int rd, int **line)
 		}
 		j++;
 		i++;
+		free(hex_str);
         }
-	free(hex_str);
 }
 
 void	display(unsigned char *str, int range)
@@ -205,8 +205,11 @@ int     main(int argc, char **argv)
 		}
 		
 		int *line2 = &line;
+		if(line % 16 != 0)
+		{
 		write_hex(buffer, line %16, &line2);
 		display(buffer, line % 16);
+		}
 		offset_in_hex(line); 
 		
 	}
