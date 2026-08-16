@@ -205,10 +205,17 @@ int     main(int argc, char **argv)
 		}
 		
 		int *line2 = &line;
+		int c = line % 16;
 		if(line % 16 != 0)
 		{
-		write_hex(buffer, line %16, &line2);
-		display(buffer, line % 16);
+			write_hex(buffer, line %16, &line2);
+			while (c < 16)
+			{
+				if (c == 7) write(1," ", 1);
+				write(1,"   ", 3);
+				c++;
+			}
+			display(buffer, line % 16);
 		}
 		offset_in_hex(line); 
 		
