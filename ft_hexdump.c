@@ -77,7 +77,7 @@ void	offset_in_hex(int nbr)
 		i++;
 	}
 	free(hex_offset);
-	write(1, "  ", 2);
+	write(1, " ", 1);
 }
 
 char	*ascii_to_hex(unsigned char nbr)
@@ -132,13 +132,13 @@ void    write_hex(unsigned char *str, int rd, int **line)
 	free(hex_str);
 }
 
-void	display(unsigned char *str)
+void	display(unsigned char *str, int range)
 {
 	int	j;
 
 	write(1, "  |", 3);
 	j = 0;
-	while (j < 16)
+	while (j < range)
 	{
 		// ASCII
 		if (str[j] >= 32 && str[j] <= 126)
@@ -182,9 +182,8 @@ void	read_file(char *filename, int *line, unsigned char *buffer)
 		if (*line % 16 == 0)
 		{
 			write_hex(buffer, 16, &line);
-			display(buffer);
+			display(buffer, 16);
 		}
-	//	break ;
         }
         close(fd);
 }
@@ -204,9 +203,12 @@ int     main(int argc, char **argv)
 			read_file(argv[i], &line, buffer);
 			i++;
 		}
-		display(buffer);
-		//write(1, "\n", 1);
-		offset_in_hex(line);
+		
+		int *line2 = &line;
+		write_hex(buffer, line %16, &line2);
+		display(buffer, line % 16);
+		offset_in_hex(line); 
+		
 	}
 	return(0);
 }
